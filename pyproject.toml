@@ -1,0 +1,26 @@
+[project]
+name = "ght"
+version = "0.1"
+description = "A set of github tools for managing groups"
+readme = "README.md"
+authors = [{name = "Dominik Boehler"}]
+license = {text = "Apache-2.0"}
+requires-python = ">=3.8"
+classifiers = [
+    "License :: OSI Approved :: Apache Software License"
+]
+dependencies = [
+    "click"
+]
+
+[project.urls]
+Homepage = "https://github.com/dominikb1888/ght"
+Changelog = "https://github.com/dominikb1888/ght/releases"
+Issues = "https://github.com/dominikb1888/ght/issues"
+CI = "https://github.com/dominikb1888/ght/actions"
+
+[project.entry-points.console_scripts]
+ght = "ght.cli:cli"
+
+[project.optional-dependencies]
+test = ["pytest"]

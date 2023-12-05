@@ -10,7 +10,7 @@ def cli():
     "A set of github tools for managing groups"
 
 
-@cli.command(name="command")
+@cli.command(name="gallery")
 @click.argument(
     "ghorg"
 )
@@ -19,24 +19,31 @@ def cli():
     "--option",
     help="An example option",
 )
-def gen_gallery(ghorg, option):
+def gallery(ghorg, option):
     "Creates a markdown image gallery from all users commiting to a group"
 
     ## TODO: Check if .env file exists if not ask user to create one
     ## TODO: authenticate via gh?
-    config = {
-        'GHTOKEN': os.environ.get("GHTOKEN"),
-        'GHORG': os.environ.get("GHORG")
-    }
+    if os.environ.get("GHTOKEN"):
+        config = { 'GHTOKEN': os.environ.get("GHTOKEN"), 'GHORG': os.environ.get("GHORG") }
+    else: 
+        env = '../.env' if os.path.exists('../.env') else '.env'
+        with open(env) as f:
+            config = {}
+            for line in f.readlines():
+                k,v = line.strip().split("=")
+                config[k] = v
 
+            config['GHORG']=ghorg     
+    print(config)
     headers = {
          'Authorization': f"token {config['GHTOKEN']}",
          'Accept': 'application/vnd.github.v3+json'
     }
-
+    print(headers)
     url = f"https://api.github.com/orgs/{config['GHORG']}/repos?per_page=100"
     httprequest = Request(url, headers=headers)
-
+    print(url)
     with urlopen(httprequest) as response:
         if response.status == 200:
             data = json.loads(response.read().decode())
@@ -45,13 +52,11 @@ def gen_gallery(ghorg, option):
                 names.append(repo['name'])
         else:
             click.echo(f"Failed to fetch repos. Status code: {response.status_code}")
-            break
 
     authors = {}
     for name in names:
-        # https://api.github.com/repos/23W-GBAC/SenaDok/commits
         click.echo(url)
-        url = f"https://api.github.com/repos/23W-GBAC/{name}/commits"
+        url = f"https://api.github.com/repos/{config['GHORG']}/{name}/commits"
         httprequest = Request(url, headers=headers)
         with urlopen(httprequest) as response:
             if response.status == 200:
@@ -61,7 +66,6 @@ def gen_gallery(ghorg, option):
                     authors[author['login']] = author
             else:
                 click.echo(f"Failed to fetch commits. Status code: {response.status_code}")
-                break
 
     text = []
     for author in authors.values():
